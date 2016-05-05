@@ -7,6 +7,7 @@ my $diryes = 0;
 my $dirat;
 my $curpid;
 my $qrycmdn;
+my $check_span = 5; # The amount of sleep() between activity checks
 
 my $data_file;
 my $gt_last_at;
@@ -58,7 +59,7 @@ sub ifstayo {
   $lc_a = `$qrycmdn`; chomp($lc_a);
   if ( $lc_a ne $curpid ) { exit(0); }
 }
-sleep(5);
+sleep($check_span);
 &ifstayo();
 
 
@@ -82,6 +83,11 @@ sub savaeo {
   my $lc_dsf;
   my $lc_cm;
   $lc_dsf = ($dirat . '/day-' . $_[0] . '.txt');
+  
+  # Just to be safe, let's not save a day's worth if it is
+  # not greater than three-times the Max-Elaps
+  if ( $_[1] < ( ( $max_elaps * 3 ) + 0.5 ) ) { return; }
+  
   $lc_cm = "echo";
   &wraprg::lst($lc_cm,$_[1]);
   $lc_cm .= ' >';
@@ -102,7 +108,7 @@ sub zangry {
   my $lc_new_date;
   my $lc_idln;
   
-  sleep(5);
+  sleep($check_span);
   
   &ifstayo();
   $lc_cm = "echo";
@@ -126,6 +132,7 @@ sub zangry {
   
   # Find elapsation:
   $lc_elaps = int(($lc_now - $gt_last_at) + 0.2);
+  if ( $lc_elaps > ( $max_elaps * 4 ) ) { $lc_elaps = $check_span; }
   if ( $lc_elaps > $max_elaps ) { $lc_elaps = $max_elaps; }
   if ( $lc_elaps < 0 ) { return; }
   
